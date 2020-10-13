@@ -530,7 +530,7 @@ def main():
            
         except KeyboardInterrupt:
             camera.stop()
-            #s.close()
+            s.close()
             #p.stop()
             #GPIO.cleanup()
             pygame.quit()
@@ -615,17 +615,17 @@ def main():
                         g_stop = True
 
                         # Stop all JOG commands first
-                        # time.sleep(0.5)
-                        # l_block = bytes('!', 'ascii') # Feed HOLD command
-                        # print("SND: " + str(l_block))
-                        # s.write(l_block) # Send g-code block to grbl
-                        # out_temp = s.readline().strip() # Wait for grbl response
-                        # if out_temp.find(b'ok') < 0 and out_temp.find(b'error') < 0 :
-                        #     pass
-                        # else:
-                        #     g_busy = False
-                        #     print("  Debug: ", out_temp)  # Debug response
-                        # time.sleep(0.5)
+                        time.sleep(0.5)
+                        l_block = bytes('!', 'ascii') # Feed HOLD command
+                        print("SND: " + str(l_block))
+                        s.write(l_block) # Send g-code block to grbl
+                        out_temp = s.readline().strip() # Wait for grbl response
+                        if out_temp.find(b'ok') < 0 and out_temp.find(b'error') < 0 :
+                            pass
+                        else:
+                            g_busy = False
+                            print("  Debug: ", out_temp)  # Debug response
+                        time.sleep(0.5)
 
                     if i == 6 and button:
                         g_stop = True
@@ -778,22 +778,22 @@ g_busy = False
 g_stop = True
 
 # Open grbl serial port
-#print("Setup serial port")
-#s = serial.Serial('/dev/ttyACM0', 115200)
+print("Setup serial port")
+s = serial.Serial('/dev/ttyACM0', 115200)
 
 # Wake up grbl
-#s.write(b"\r\n\r\n")
-#time.sleep(2)   # Wait for grbl to initialize 
-#s.flushInput()  # Flush startup text in serial input
+s.write(b"\r\n\r\n")
+time.sleep(2)   # Wait for grbl to initialize
+s.flushInput()  # Flush startup text in serial input
 
 # CNC acceleration setttings
 print("Setup CNC controller")
-#l_block = bytes("$120=100", 'utf-8')
-#s.write(l_block + b'\n') # Send g-code block to grbl
-#time.sleep(1)
-#l_block = bytes("$121=100", 'utf-8')
-#s.write(l_block + b'\n') # Send g-code block to grbl
-#time.sleep(1)
+l_block = bytes("$120=100", 'utf-8')
+s.write(l_block + b'\n') # Send g-code block to grbl
+time.sleep(1)
+l_block = bytes("$121=100", 'utf-8')
+s.write(l_block + b'\n') # Send g-code block to grbl
+time.sleep(1)
 
 
 # Execute MAIN
