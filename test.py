@@ -80,7 +80,7 @@ def train_bot():
 
     # Train the neural network
     NUM_EPOCHS = 50
-    BEST_MODEL_PATH = 'models/best_model.pth'
+    BEST_MODEL_PATH = 'models/classification/best_model.pth'
     best_accuracy = 0.0
 
     optimizer = optim.SGD(t_model.parameters(), lr=0.001, momentum=0.9)
@@ -708,7 +708,7 @@ try:
     os.makedirs(free_dir)
     os.makedirs(blocked_dir)
 except FileExistsError:
-    print('Directories not created becasue they already exist')
+    print('Directories not created because they already exist')
 free_count = len(os.listdir(free_dir))
 blocked_count = len(os.listdir(blocked_dir))
 print("Free    Count : ", free_count)
@@ -721,13 +721,13 @@ camera = Camera(width=width, height=height, rotate=False)
 
 # SSD Object detector
 print("Loading SSD Object Detector")
-model = ObjectDetector('models/ssd_mobilenet_v2_coco.engine')
+model = ObjectDetector('models/object_detect/ssd_mobilenet_v2_coco.engine')
 
 # Collision Detector
 print("Loading Collision Model")
 collision_model = torchvision.models.alexnet(pretrained=False)
 collision_model.classifier[6] = torch.nn.Linear(collision_model.classifier[6].in_features, 2)
-collision_model.load_state_dict(torch.load('models/best_model.pth'))
+collision_model.load_state_dict(torch.load('models/classification/best_model.pth'))
 device = torch.device('cuda')
 collision_model = collision_model.to(device)
 mean = 255.0 * np.array([0.485, 0.456, 0.406])
