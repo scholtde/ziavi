@@ -10,7 +10,6 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
-import serial
 import time
 import random
 import os
@@ -521,7 +520,6 @@ def main():
     global g_stop
     
     while True:
-      
         # Check Ctrl+C
         try:
             #detections = model(camera.value)
@@ -530,7 +528,6 @@ def main():
            
         except KeyboardInterrupt:
             camera.stop()
-            s.close()
             #p.stop()
             #GPIO.cleanup()
             pygame.quit()
@@ -547,7 +544,6 @@ def main():
                     #while pygame.mixer.music.get_busy() == True:
                     #  continue
                     camera.stop()
-                    s.close()
                     #p.stop()
                     #GPIO.cleanup()
                     pygame.quit()
@@ -570,39 +566,15 @@ def main():
 
                     if i == 0 and button:
                         print("UP - is pressed")
-                        g_stop = True
-
-                        j_x += 0.25
-                        j_y += 0.25
-                        speed = 200
-                        move_robot(j_x, j_y, speed)
 
                     if i == 1 and button:
                         print("RIGHT - is pressed")
-                        g_stop = True
-
-                        j_x += 0.25
-                        j_y -= 0.25
-                        speed = 200
-                        move_robot(j_x, j_y, speed)
 
                     if i == 2 and button:
                         print("DOWN - is pressed")
-                        g_stop = True
-
-                        j_x -= 0.25
-                        j_y -= 0.25
-                        speed = 200
-                        move_robot(j_x, j_y, speed)
 
                     if i == 3 and button:
                         print("LEFT - is pressed")
-                        g_stop = True
-
-                        j_x -= 0.25
-                        j_y += 0.25
-                        speed = 200
-                        move_robot(j_x, j_y, speed)
 
                     if i == 4 and button:
                         g_stop = True
@@ -613,19 +585,6 @@ def main():
                     if i == 5 and button:
                         print("R.UPPER - is pressed")
                         g_stop = True
-
-                        # Stop all JOG commands first
-                        time.sleep(0.5)
-                        l_block = bytes('!', 'ascii') # Feed HOLD command
-                        print("SND: " + str(l_block))
-                        s.write(l_block) # Send g-code block to grbl
-                        out_temp = s.readline().strip() # Wait for grbl response
-                        if out_temp.find(b'ok') < 0 and out_temp.find(b'error') < 0 :
-                            pass
-                        else:
-                            g_busy = False
-                            print("  Debug: ", out_temp)  # Debug response
-                        time.sleep(0.5)
 
                     if i == 6 and button:
                         g_stop = True
@@ -647,28 +606,6 @@ def main():
 
                     if i == 9 and button:
                         print("START - is pressed")
-                        l_count += 1 # Iterate line counter
-                        j_x += random.randint(-1,1)
-                        j_y -= random.randint(-1,1)
-                        j_speed = str(random.randint(200,250))
-                        l_block = bytes("$J=X"+str(j_x)+" Y"+str(j_y)+" F"+j_speed, 'utf-8')
-                        c_line.append(len(l_block)+1) # Track number of characters in grbl serial read buffer
-                        grbl_out = b''
-
-                        while sum(c_line) >= RX_BUFFER_SIZE-1 | s.inWaiting() :
-                            out_temp = s.readline().strip() # Wait for grbl response
-                            if out_temp.find(b'ok') < 0 and out_temp.find(b'error') < 0 :
-                                print("  Debug: ",out_temp) # Debug response
-                            else :
-                                grbl_out += out_temp;
-                                g_count += 1 # Iterate g-code counter
-                                grbl_out += bytes(str(g_count), 'utf-8') # Add line finished indicator
-                                del c_line[0] # Delete the block character count corresponding to the last 'ok'
-                        if verbose:
-                            print("SND: " + str(l_count) + " : " + str(l_block))
-                            s.write(l_block + b'\n') # Send g-code block to grbl
-                        if verbose :
-                            print("BUF:",str(sum(c_line)),"REC:",grbl_out)
 
                         time.sleep(0.1)
 
@@ -736,38 +673,6 @@ normalize = torchvision.transforms.Normalize(mean, stdev)
 check_time_blocked = time.time()
 check_time_free = time.time()
 
-# Robot Movement
-output_pins = {
-        'JETSON_XAVIER': 18,
-        'JETSON_NANO': 33,
-      }
-output_pin = output_pins.get(GPIO.model, None)
-if output_pin is None:
-    raise Exception('PWM not supported on this board')
-
-# Pin Setup:
-# Board pin-numbering scheme
-#GPIO.setmode(GPIO.BOARD)
-# set pin as an output pin with optional initial state of HIGH
-#GPIO.setup(output_pin, GPIO.OUT)
-
-#duty_cycle = 10 # 2.5 = 0deg to 12.5=180deg
-#freq = 50 # servo motor expect a pulse every 20ms (period), that means 50 pulses per second or Hertz
-#p = GPIO.PWM(output_pin, freq)
-#p.start(duty_cycle)
-#time.sleep(1)
-#p.ChangeDutyCycle(10)  # turn towards 90 degree
-#time.sleep(1) # sleep 1 second
-#p.ChangeDutyCycle(20)  # turn towards 0 degree
-#time.sleep(1) # sleep 1 second
-#p.ChangeDutyCycle(30) # turn towards 180 degree
-#time.sleep(1) # sleep 1 second 
-#pitch_pwm = pitch_angle*(2000/180) + 0   # pwm = ang(sweep/180) +/- offset
-#pi.set_servo_pulsewidth(pitch_servo, pitch_pwm)
-
-# Buffer for GCODE serial stream
-RX_BUFFER_SIZE = 128
-
 verbose = True
 l_count = 0
 g_count = 0
@@ -776,25 +681,6 @@ j_x = 0
 j_y = 0
 g_busy = False
 g_stop = True
-
-# Open grbl serial port
-print("Setup serial port")
-s = serial.Serial('/dev/ttyACM0', 115200)
-
-# Wake up grbl
-s.write(b"\r\n\r\n")
-time.sleep(2)   # Wait for grbl to initialize
-s.flushInput()  # Flush startup text in serial input
-
-# CNC acceleration setttings
-print("Setup CNC controller")
-l_block = bytes("$120=100", 'utf-8')
-s.write(l_block + b'\n') # Send g-code block to grbl
-time.sleep(1)
-l_block = bytes("$121=100", 'utf-8')
-s.write(l_block + b'\n') # Send g-code block to grbl
-time.sleep(1)
-
 
 # Execute MAIN
 if __name__ == '__main__':
