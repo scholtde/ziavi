@@ -47,7 +47,7 @@ model = model.to(device)
 
 # Train the neural network
 NUM_EPOCHS = 50
-BEST_MODEL_PATH = 'models/best_model.pth'
+BEST_MODEL_PATH = 'models/classification/best_model.pth'
 best_accuracy = 0.0
 
 optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
